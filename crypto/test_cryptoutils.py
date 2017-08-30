@@ -20,7 +20,7 @@ Contact: emilis.rupeika@gmail.com
 
 import unittest
 
-from .cryptoutils import hex_to_base64
+from .cryptoutils import hex_to_base64, hex_xor
 
 class TestHexOperations(unittest.TestCase):
     def test_hex_to_b64_encoding(self):
@@ -39,3 +39,13 @@ class TestHexOperations(unittest.TestCase):
         output_expected_str = 'SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29'\
                               'ub3VzIG11c2hyb29t'
         self.assertEqual(hex_to_base64(input_str), output_expected_str)
+
+    def test_hex_xor(self):
+        input_str1 = 'adad'
+        output_expected_str = '0000'
+        self.assertEqual(hex_xor(input_str1, input_str1), output_expected_str)
+
+        input_str1 = '1c0111001f010100061a024b53535009181c'
+        input_str2 = '686974207468652062756c6c277320657965'
+        output_expected_str = '746865206b696420646f6e277420706c6179'
+        self.assertEqual(hex_xor(input_str1, input_str2), output_expected_str)
