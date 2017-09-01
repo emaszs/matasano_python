@@ -20,10 +20,13 @@ Contact: emilis.rupeika@gmail.com
 
 import unittest
 
-from .cryptoutils import hex_to_base64, hex_xor
+from .cryptoutils import hex_to_base64, hex_xor, decipher_single_byte_xor
 
 class TestHexOperations(unittest.TestCase):
     def test_hex_to_b64_encoding(self):
+        """
+        Hex is encoded to Base64 with padding correctly.
+        """
         input_str = 'adad'
         output_expected_str = 'ra0='
         self.assertEqual(hex_to_base64(input_str), output_expected_str)
@@ -41,6 +44,9 @@ class TestHexOperations(unittest.TestCase):
         self.assertEqual(hex_to_base64(input_str), output_expected_str)
 
     def test_hex_xor(self):
+        """
+        Hex string XORED against variable length keys
+        """
         input_str1 = 'adad'
         output_expected_str = '0000'
         self.assertEqual(hex_xor(input_str1, input_str1), output_expected_str)
@@ -49,3 +55,22 @@ class TestHexOperations(unittest.TestCase):
         input_str2 = '686974207468652062756c6c277320657965'
         output_expected_str = '746865206b696420646f6e277420706c6179'
         self.assertEqual(hex_xor(input_str1, input_str2), output_expected_str)
+
+    def test_single_byte_xor_decipher(self):
+
+        input_text = '1b37373331363f78151b7f2b783431333d78397828372'\
+                     'd363c78373e783a393b3736'
+        decipher_single_byte_xor(input_text)
+
+    def test_hex_to_ascii(self):
+        pass
+
+    def test_ascii_to_hex(self):
+        pass
+
+    def test_get_english_score(self):
+        pass
+
+    def test_decipher_single_byte_xor(self):
+        pass
+

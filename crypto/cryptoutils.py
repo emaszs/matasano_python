@@ -18,7 +18,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Contact: emilis.rupeika@gmail.com
 """
 
-from binascii import b2a_base64
+import codecs
+
+from binascii import b2a_base64, unhexlify
+
+# TODO better input validation
+
 
 def hex_to_base64(input_str):
     """
@@ -57,11 +62,102 @@ def hex_xor(str1, str2):
                 as input str1.
     """
 
+
+
     res = ""
     for i in range(len(str1)):
         str2_index = i % len(str2)
         res += hex(int(str1[i], 16) ^ int(str2[str2_index], 16))[2:]
     return res
+
+def ascii_chars():
+    """
+    Gets all of the 128 ASCII chars sequentially.
+
+    Returns:
+        list: 0-127 ASCII character list
+    """
+    res = []
+    for i in range(128):
+        res += chr(i)
+
+    return res
+
+def ascii_to_hex(ascii_str):
+    """
+    Return the Hex representation of ASCII-encoded input data.
+
+    Args:
+        ascii_str: ASCII-encoded input data.
+
+    Returns:
+        str: Hex-encoded input data.
+
+    """
+
+    bytes_input = bytes(ascii_str, 'ascii')
+    return codecs.encode(bytes_input, 'hex').decode('ascii')
+
+def hex_to_ascii(hex_str):
+    """
+    Return the ASCII representation of Hex-encoded input data.
+
+    Args:
+        hex_str: Hex-encoded data to be converted into ASCII, even length.
+
+    Returns:
+        str: ASCII-encoded input data.
+    """
+
+    return codecs.decode(hex_str, 'hex').decode('ascii')
+
+def get_english_score(text):
+    """
+    Give a piece of text a score based on how likely it is to be English
+    language.
+
+    The score is calculated by taking predefined scores for some of the
+    most common English alphabet letters (etaoinshrdlcumwf) and calculating the
+    total sum score of the piece of text provided. The more 'English' characters
+    the text has, the higher it's score will be.
+
+    Less common letters (not part of the list 'etaoinshrdlcumwf') are ignored.
+
+    Args:
+        text (str): Input text to evaluate.
+
+    Returns:
+        float: Text's English-likeness score.
+    """
+
+    english_char_score = {'E': 12.702, 'T': 9.056, 'A': 8.167, 'O': 7.507,
+                          'I': 6.966, 'N': 6.749, 'S': 6.327, 'H': 6.094,
+                          'R': 5.987, 'D': 4.253, 'L': 4.025, 'C': 2.782,
+                          'U': 2.758, 'M': 2.406, 'W':2.360, 'F': 2.228}
+
+    res = 0
+    for char in text:
+        res += english_char_score.get(char.upper(), 0)
+
+    return res
+
+def decipher_single_byte_xor(text):
+    scores = []
+    for char in ascii_chars():
+        hex_char = ascii_to_hex(char)
+        deciphered_text = unhexlify(hex_xor(text, hex_char)).decode('ascii')
+        score = get_english_score(deciphered_text)
+        scores.append((score, hex_char))
+#     print(highest_scoring_char, highest_scoring_deciphered_text.strip)
+    scores.sort(key=lambda tup: tup[0], reverse=True)
+    print(scores)
+
+    print('Top 10 best tries:')
+    for i in range(10):
+        hex_char = scores[i][1]
+        deciphered_text = unhexlify(hex_xor(text, hex_char)).decode('ascii')
+        print(i,':')
+        print(deciphered_text)
 
 if __name__ == '__main__':
     pass
