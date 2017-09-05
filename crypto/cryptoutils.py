@@ -21,8 +21,6 @@ import codecs
 
 from binascii import b2a_base64, unhexlify
 
-# TODO better input validation
-
 
 def hex_to_base64(input_str):
     """
@@ -121,12 +119,15 @@ def get_english_score(text):
     the text has, the higher it's score will be.
 
     Less common letters (not part of the list 'etaoinshrdlcumwf') are ignored.
+    Of course the rest of the letters can be added with their corresponding
+    scores, but I don't feel like it, at least not until we're dealing with
+    much bigger amounts of data.
 
     Args:
         text (str): Input text to evaluate.
 
     Returns:
-        float: Text's English-likeness score.
+        float: Text's English-likeness score, the higher the better.
     """
 
     english_char_score = {'E': 12.702, 'T': 9.056, 'A': 8.167, 'O': 7.507,
@@ -140,23 +141,37 @@ def get_english_score(text):
 
     return res
 
-def decipher_single_byte_xor(text):
+def single_ascii_char_xor_bruteforce(text):
+    """
+    Bruteforce the decryption of input text with all of the 128 ASCII chars
+    using the single byte xor method.
+
+    The ASCII characters to try are provided by ascii_chars(). This function
+    takes each of them and applies the hex_xor() decryption using the character
+    as the key. In order to not have to go through all of the results manually,
+    measuring success is done by get_english_score(). The results are returned
+    as a list of tuples containing the XOR'ed text, the key that was used and
+    the resulting score sorted from the best to the worst result.
+
+    Args:
+        text (str): ASCII data that is suspected to have been XOR'ed against a
+        single ASCII char.
+
+    Returns:
+        list: A list of (xored_text, xor_key, english_score_with_the_key) tuples
+            sorted by the score in descending order.
+    """
     scores = []
     for char in ascii_chars():
+        # Get the Hex value of the character so that it can be used in the Hex
+        # XOR function.
         hex_char = ascii_to_hex(char)
+        # XOR the data, convert the Hex information into bytes and finally,
+        # decode the bytes as ASCII data.
         deciphered_text = unhexlify(hex_xor(text, hex_char)).decode('ascii')
+
         score = get_english_score(deciphered_text)
-        scores.append((score, hex_char))
-#     print(highest_scoring_char, highest_scoring_deciphered_text.strip)
-    scores.sort(key=lambda tup: tup[0], reverse=True)
-    print(scores)
+        scores.append((deciphered_text, hex_char, score))
+    scores.sort(key=lambda tup: tup[2], reverse=True)
 
-    print('Top 10 best tries:')
-    for i in range(10):
-        hex_char = scores[i][1]
-        deciphered_text = unhexlify(hex_xor(text, hex_char)).decode('ascii')
-        print(i,':')
-        print(deciphered_text)
-
-if __name__ == '__main__':
-    pass
+    return scores
